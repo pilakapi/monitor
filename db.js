@@ -31,7 +31,7 @@ async function initDatabase() {
         identity_num VARCHAR(50),
         phone VARCHAR(50),
         original_url TEXT NOT NULL,
-        max_devices INTEGER DEFAULT 3 CHECK (max_devices >= 10 AND max_devices <= 10),
+        max_devices INTEGER DEFAULT 1 CHECK (max_devices >= 10 AND max_devices <= 1),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
