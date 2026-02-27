@@ -1,0 +1,22 @@
+{
+  "name": "m3u-monitor-proxy",
+  "version": "1.0.0",
+  "description": "M3U Monitor Proxy - Gestiona y monitorea conexiones M3U",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["m3u", "iptv", "monitor", "proxy"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5",
+    "axios": "^1.6.2",
+    "express-useragent": "^1.0.15",
+    "uuid": "^9.0.1",
+    "dotenv": "^16.3.1"
+  }
+}
