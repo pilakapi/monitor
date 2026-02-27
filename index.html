@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M3U Monitor - Gestión de Usuarios IPTV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-slate-700">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-white">M3U Monitor</h1>
+        <p class="text-slate-400 mt-2">Ingrese su PIN de acceso</p>
+      </div>
+      
+      <form id="login-form" class="space-y-6">
+        <div>
+          <label for="pin" class="block text-sm font-medium text-slate-300 mb-2">PIN de Administrador</label>
+          <input 
+            type="password" 
+            id="pin" 
+            maxlength="6"
+            class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="------"
+            autocomplete="off"
+          >
+        </div>
+        
+        <button 
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+          </svg>
+          Ingresar
+        </button>
+        
+        <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-center text-sm"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="dashboard" class="hidden min-h-screen">
+    <!-- Barra de navegación -->
+    <nav class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <span class="text-xl font-bold text-white">M3U Monitor</span>
+          </div>
+          
+          <div class="flex-1 max-w-xl mx-8">
+            <div class="relative">
+              <input 
+                type="text" 
+                id="search-input"
+                placeholder="Buscar por nombre de usuario..."
+                class="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+              <svg class="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <button 
+              onclick="showCreateModal()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Nuevo Usuario
+            </button>
+            <button 
+              onclick="logout()"
+              class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              Salir
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-400 text-sm">Total Usuarios</p>
+              <p id="total-users" class="text-3xl font-bold text-white mt-1">0</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-400 text-sm">Dispositivos Activos</p>
+              <p id="total-devices" class="text-3xl font-bold text-green-400 mt-1">0</p>
+            </div>
+            <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-400 text-sm">URLs Creadas</p>
+              <p id="total-urls" class="text-3xl font-bold text-purple-400 mt-1">0</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de usuarios -->
+      <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div class="p-6 border-b border-slate-700">
+          <h2 class="text-xl font-semibold text-white">Usuarios Registrados</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-slate-700/50">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Usuario</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Cédula</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Teléfono</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Dispositivos</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Fecha Creación</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">URL Espejo</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-table" class="divide-y divide-slate-700">
+              <!-- Los usuarios se cargarán aquí -->
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Loading state -->
+        <div id="loading-state" class="p-8 text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <p class="text-slate-400 mt-2">Cargando usuarios...</p>
+        </div>
+        
+        <!-- Empty state -->
+        <div id="empty-state" class="hidden p-8 text-center">
+          <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          <p class="text-slate-400 text-lg">No hay usuarios registrados</p>
+          <p class="text-slate-500 text-sm mt-1">Crea un nuevo usuario para comenzar</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE CREAR/EDITAR USUARIO -->
+  <div id="user-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-700 fade-in">
+      <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+        <h3 id="modal-title" class="text-xl font-semibold text-white">Nuevo Usuario</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <form id="user-form" class="p-6 space-y-4">
+        <input type="hidden" id="user-id">
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Nombre del Cliente *</label>
+          <input 
+            type="text" 
+            id="user-name"
+            required
+            class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Juan Pérez"
+          >
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Cédula</label>
+            <input 
+              type="text" 
+              id="user-cedula"
+              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="12345678"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Teléfono</label>
+            <input 
+              type="tel" 
+              id="user-phone"
+              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="+502 1234 5678"
+            >
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">URL M3U Original *</label>
+          <input 
+            type="url" 
+            id="user-url"
+            required
+            class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="https://ejemplo.com/lista.m3u"
+          >
+        </div>
+        
+        <!-- URL Espejo (solo lectura) -->
+        <div id="mirror-url-container" class="hidden">
+          <label class="block text-sm font-medium text-slate-300 mb-2">URL Espejo (Copiar para IPTV)</label>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="user-mirror-url"
+              readonly
+              class="flex-1 px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-green-400 font-mono text-sm"
+            >
+            <button 
+              type="button"
+              onclick="copyMirrorUrl()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Esta URL nunca cambia, incluso si editas los datos del usuario</p>
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button 
+            type="button"
+            onclick="closeModal()"
+            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+          >
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICACIONES -->
+  <div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div id="toast-content" class="bg-slate-800 border border-slate-700 rounded-lg px-6 py-4 shadow-2xl flex items-center gap-3">
+      <svg id="toast-icon" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span id="toast-message" class="text-white"></span>
+    </div>
+  </div>
+
+  <script>
+    // ==================== ESTADO GLOBAL ====================
+    let authToken = localStorage.getItem('m3u_token');
+    let users = [];
+
+    // ==================== INICIALIZACIÓN ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      if (authToken) {
+        showDashboard();
+        loadUsers();
+      }
+      
+      // Event listeners
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+      document.getElementById('user-form').addEventListener('submit', handleUserSubmit);
+      document.getElementById('search-input').addEventListener('input', handleSearch);
+      
+      // Auto-refresh cada 30 segundos
+      setInterval(() => {
+        if (authToken && !document.getElementById('dashboard').classList.contains('hidden')) {
+          loadUsers();
+        }
+      }, 30000);
+    });
+
+    // ==================== AUTENTICACIÓN ====================
+    function handleLogin(e) {
+      e.preventDefault();
+      
+      const pin = document.getElementById('pin').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          authToken = data.token;
+          localStorage.setItem('m3u_token', data.token);
+          showDashboard();
+          loadUsers();
+          errorDiv.classList.add('hidden');
+        } else {
+          errorDiv.textContent = data.message;
+          errorDiv.classList.remove('hidden');
+        }
+      })
+      .catch(err => {
+        errorDiv.textContent = 'Error de conexión';
+        errorDiv.classList.remove('hidden');
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('m3u_token');
+      authToken = null;
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('pin').value = '';
+    }
+
+    function showDashboard() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+    }
+
+    // ==================== GESTIÓN DE USUARIOS ====================
+    function loadUsers(search = '') {
+      const loadingState = document.getElementById('loading-state');
+      const emptyState = document.getElementById('empty-state');
+      const tableBody = document.getElementById('users-table');
+      
+      loadingState.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      tableBody.innerHTML = '';
+      
+      const url = search ? `/api/users?search=${encodeURIComponent(search)}` : '/api/users';
+      
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          loadingState.classList.add('hidden');
+          
+          if (data.success && data.users.length > 0) {
+            users = data.users;
+            renderUsers(users);
+            updateStats();
+          } else if (data.success && data.users.length === 0) {
+            emptyState.classList.remove('hidden');
+            users = [];
+            updateStats();
+          }
+        })
+        .catch(err => {
+          loadingState.classList.add('hidden');
+          showToast('Error al cargar usuarios', 'error');
+        });
+    }
+
+    function renderUsers(usersData) {
+      const tableBody = document.getElementById('users-table');
+      tableBody.innerHTML = '';
+      
+      usersData.forEach(user => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-700/30 transition-colors';
+        
+        const deviceCount = parseInt(user.active_devices) || 0;
+        const deviceBadgeClass = deviceCount > 0 
+          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+          : 'bg-slate-600/30 text-slate-400 border-slate-600/30';
+        
+        const createdAt = new Date(user.created_at).toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        row.innerHTML = `
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center">
+                <span class="text-blue-400 font-semibold">${user.name.charAt(0).toUpperCase()}</span>
+              </div>
+              <span class="font-medium text-white">${escapeHtml(user.name)}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-slate-300">${escapeHtml(user.cedula || '-')}</td>
+          <td class="px-6 py-4 text-slate-300">${escapeHtml(user.phone || '-')}</td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${deviceBadgeClass}">
+              <span class="w-2 h-2 ${deviceCount > 0 ? 'bg-green-400 animate-pulse' : 'bg-slate-400'} rounded-full mr-2"></span>
+              ${deviceCount} dispositivo${deviceCount !== 1 ? 's' : ''}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-slate-400 text-sm">${createdAt}</td>
+          <td class="px-6 py-4">
+            <button 
+              onclick="copyToClipboard('${escapeHtml(user.mirror_url)}')"
+              class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+              Copiar URL
+            </button>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <button 
+                onclick="showEditModal(${user.id})"
+                class="text-slate-400 hover:text-blue-400 p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
+                title="Editar"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </button>
+              <button 
+                onclick="deleteUser(${user.id})"
+                class="text-slate-400 hover:text-red-400 p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
+                title="Eliminar"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    function updateStats() {
+      const totalUsers = users.length;
+      const totalDevices = users.reduce((sum, user) => sum + (parseInt(user.active_devices) || 0), 0);
+      
+      document.getElementById('total-users').textContent = totalUsers;
+      document.getElementById('total-devices').textContent = totalDevices;
+      document.getElementById('total-urls').textContent = totalUsers;
+    }
+
+    function handleSearch(e) {
+      const search = e.target.value.trim();
+      loadUsers(search);
+    }
+
+    // ==================== MODAL ====================
+    function showCreateModal() {
+      document.getElementById('modal-title').textContent = 'Nuevo Usuario';
+      document.getElementById('user-id').value = '';
+      document.getElementById('user-name').value = '';
+      document.getElementById('user-cedula').value = '';
+      document.getElementById('user-phone').value = '';
+      document.getElementById('user-url').value = '';
+      document.getElementById('mirror-url-container').classList.add('hidden');
+      document.getElementById('user-modal').classList.remove('hidden');
+    }
+
+    function showEditModal(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      
+      document.getElementById('modal-title').textContent = 'Editar Usuario';
+      document.getElementById('user-id').value = user.id;
+      document.getElementById('user-name').value = user.name;
+      document.getElementById('user-cedula').value = user.cedula || '';
+      document.getElementById('user-phone').value = user.phone || '';
+      document.getElementById('user-url').value = user.original_url;
+      document.getElementById('user-mirror-url').value = user.mirror_url;
+      document.getElementById('mirror-url-container').classList.remove('hidden');
+      document.getElementById('user-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('user-modal').classList.add('hidden');
+    }
+
+    function handleUserSubmit(e) {
+      e.preventDefault();
+      
+      const userId = document.getElementById('user-id').value;
+      const userData = {
+        name: document.getElementById('user-name').value,
+        cedula: document.getElementById('user-cedula').value,
+        phone: document.getElementById('user-phone').value,
+        original_url: document.getElementById('user-url').value
+      };
+      
+      const method = userId ? 'PUT' : 'POST';
+      const url = userId ? `/api/users/${userId}` : '/api/users';
+      
+      fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast(userId ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+          closeModal();
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Error al guardar usuario', 'error');
+      });
+    }
+
+    function deleteUser(userId) {
+      if (!confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      fetch(`/api/users/${userId}`, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast('Usuario eliminado correctamente');
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Error al eliminar usuario', 'error');
+      });
+    }
+
+    // ==================== UTILIDADES ====================
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('URL copiada al portapapeles');
+      }).catch(() => {
+        showToast('Error al copiar', 'error');
+      });
+    }
+
+    function copyMirrorUrl() {
+      const url = document.getElementById('user-mirror-url').value;
+      if (url) {
+        copyToClipboard(url);
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      
+      toastMessage.textContent = message;
+      
+      if (type === 'error') {
+        toastIcon.className = 'w-6 h-6 text-red-500';
+        toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+        document.getElementById('toast-content').classList.add('border-red-500/30');
+      } else {
+        toastIcon.className = 'w-6 h-6 text-green-500';
+        toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+        document.getElementById('toast-content').classList.remove('border-red-500/30');
+      }
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Cerrar modal al hacer click fuera
+    document.getElementById('user-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('user-modal')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
