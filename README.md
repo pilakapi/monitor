@@ -1,172 +1,119 @@
-# M3U Monitor - Aplicación de Monitoreo IPTV
+# M3U Monitor Proxy
 
-Aplicación web para gestionar URLs M3U y monitorear dispositivos conectados en tiempo real.
+Aplicación web para monitoreo de URLs M3U con detección de dispositivos.
 
 ## Características
 
-- 🔐 **Autenticación segura** con PIN de 6 dígitos (198823)
-- 👥 **Gestión de usuarios** - Crear, editar, eliminar usuarios
-- 📊 **Monitoreo en tiempo real** - Contador de dispositivos activos
-- 🔗 **URLs espejo** - Genera URLs cortas que interceptan el tráfico
-- 🔍 **Buscador** - Filtrar usuarios por nombre
-- 📱 **Diseño responsivo** - Funciona en dispositivos móviles
+- **Gestión de Usuarios**: Crear, editar, eliminar usuarios con nombre, cédula, teléfono
+- **URL Espejo**: Genera URLs únicas que interceptan el tráfico para detectar dispositivos
+- **Detección de Dispositivos**: Móvil, Tablet, PC, Smart TV
+- **Búsqueda**: Buscar usuarios por nombre
+- **Autenticación**: PIN de 6 dígitos (198823)
+- **Persistencia**: Base de datos Neon PostgreSQL
 
 ## Archivos
 
 ```
-├── index.html      # Interfaz de usuario (Frontend)
-├── server.js       # Servidor Express (Backend API)
-├── db.js           # Conexión a base de datos Neon
-├── package.json    # Dependencias de Node.js
-└── .env.example    # Ejemplo de variables de entorno
+/workspace/
+├── package.json      # Dependencias del proyecto
+├── server.js         # Servidor Express principal
+├── db.js             # Módulo de base de datos
+├── index.html        # Interfaz de usuario
+├── .env.example      # Ejemplo de variables de entorno
+└── README.md         # Este archivo
 ```
 
 ## Instalación Local
 
-1. **Clona el repositorio:**
-   ```bash
-   git clone <tu-repositorio>
-   cd m3u-monitor
-   ```
-
-2. **Instala las dependencias:**
-   ```bash
-   npm install
-   ```
-
-3. **Configura las variables de entorno:**
-   ```bash
-   cp .env.example .env
-   # Edita .env con tu URL de Neon
-   ```
-
-4. **Inicia el servidor:**
-   ```bash
-   npm start
-   ```
-
-5. **Accede a la aplicación:**
-   ```
-   http://localhost:3000
-   ```
-
-## Configuración de Neon (Base de Datos)
-
-### Paso 1: Crear proyecto en Neon
-
-1. Ve a [Neon.tech](https://neon.tech)
-2. Crea una cuenta gratuita
-3. Crea un nuevo proyecto
-4. Copia la URL de conexión (Connection String)
-
-### Paso 2: La URL de conexión se verá así:
-```
-postgres://username:password@ep-xyz.us-east-1.aws.neon.tech/neondb?sslmode=require
+1. **Instalar dependencias**:
+```bash
+npm install
 ```
 
-## Despliegue en Render
+2. **Configurar variables de entorno**:
+```bash
+cp .env.example .env
+# Editar .env con la
+```
 
-### Paso 1: Preparar GitHub
+3. URL de Neon **Iniciar servidor**:
+```bash
+npm start
+```
 
-1. Sube todos los archivos a un repositorio GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/tu-usuario/m3u-monitor.git
-   git push -u origin main
-   ```
+4. **Acceder**: http://localhost:10000
 
-### Paso 2: Crear base de datos en Neon
+## Despliegue en Render con Neon
 
-1. Ve a [Neon Console](https://console.neon.tech)
-2. Selecciona tu proyecto
-3. Ve a **Branches** y crea una rama llamada `main`
-4. Copia la **Connection String** de la rama `main`
+### Paso 1: Crear Base de Datos en Neon
 
-### Paso 3: Crear Web Service en Render
+1. Ve a [Neon.tech](https://neon.tech) y crea una cuenta
+2. Crea un nuevo proyecto
+3. En "Connection Details", copia la URL de conexión
+   - Formato: `postgresql://user:password@host.neon.tech/neondb?sslmode=require`
 
-1. Ve a [Render Dashboard](https://dashboard.render.com)
-2. Click en **New +** → **Web Service**
+### Paso 2: Configurar Render
+
+1. Crea una cuenta en [Render.com](https://render.com)
+2. Crea un nuevo "Web Service"
 3. Conecta tu repositorio GitHub
 4. Configura:
-   - **Name:** `m3u-monitor`
-   - **Environment:** `Node`
-   - **Build Command:** `npm install`
-   - **Start Command:** `node server.js`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
 
-### Paso 4: Configurar Variables de Entorno
+### Paso 3: Variables de Entorno en Render
 
-En Render, agrega las siguientes variables en la sección **Environment**:
+En la sección "Environment" de Render, agrega:
 
 | Variable | Valor |
 |----------|-------|
-| `DATABASE_URL` | La URL de conexión de Neon (incluye `?sslmode=require`) |
-| `ADMIN_PIN` | `198823` |
-| `PORT` | `3000` |
+| `DATABASE_URL` | Tu URL de Neon (postgresql://...) |
+| `PORT` | 10000 |
 
-**⚠️ IMPORTANTE:** La URL de Neon debe terminar con `?sslmode=require` para funcionar correctamente con Render.
+**Importante**: La URL de Neon debe terminar con `?sslmode=require`
 
-### Paso 5: Desplegar
+### Paso 4: Desplegar
 
-1. Click en **Create Web Service**
-2. Espera a que termine el build (puede tomar 2-3 minutos)
-3. Tu aplicación estará disponible en `https://m3u-monitor.onrender.com`
+- Haz clic en "Deploy"
+- Espera a que termine el build
+- Tu aplicación estará disponible en la URL de Render
 
 ## Uso de la Aplicación
 
-### Iniciar sesión
-- PIN: `198823`
+### Login
+- PIN: **198823**
 
-### Crear usuario
-1. Click en **Nuevo Usuario**
-2. Ingresa los datos del cliente
-3. Ingresa la URL M3U original del proveedor
-4. Click en **Guardar**
-5. Se generará una URL espejo automáticamente
+### Agregar Usuario
+1. Click en "Agregar Usuario"
+2. Completa los datos:
+   - Nombre
+   - Número de Cédula
+   - Número de Teléfono
+   - URL M3U Original
+3. Click en "Guardar"
 
 ### URL Espejo
-- La URL generada termina en `.m3u`
-- **Nunca cambia** aunque edités los datos del usuario
-- Úsala en tu aplicación IPTV para descargar los canales
-- Cada vez que un dispositivo acceda, se registrará en el contador
+- Cada usuario genera una URL espejo única
+- Format: `https://tu-app.onrender.com/m3u/UUID.m3u`
+- **Esta URL NUNCA cambia** - puedes editar el usuario y seguirá funcionando
+- Comparte esta URL con tus usuarios para ver quién accede
 
 ### Monitoreo
-- Los dispositivos se cuentan cuando acceden a la URL espejo
-- Un dispositivo se considera "activo" si ha accedido en los últimos 5 minutos
-- El contador se actualiza automáticamente cada 30 segundos
+- Verifica quién accede a la lista M3U
+- Muestra el tipo de dispositivo (Móvil, Tablet, PC, TV)
+- Registra fecha y hora de cada acceso
 
-## Estructura de la URL Espejo
+## Détección de Dispositivos
 
-```
-https://tu-dominio.onrender.com/get/abc123.m3u
-```
+La aplicación detecta automáticamente:
+- 📱 **Móvil**: iPhone, Android
+- 📱 **Tablet**: iPad, Android Tablet
+- 💻 **PC**: Windows, Mac, Linux
+- 📺 **TV**: Smart TV (LG, Samsung, Roku, Apple TV, etc.)
 
-Donde `abc123` es un código único generado para cada usuario.
+## Soporte
 
-## Solución de Problemas
-
-### Error de conexión a la base de datos
-- Verifica que la `DATABASE_URL` sea correcta
-- Asegúrate de que termine con `?sslmode=require`
-- Verifica que el proyecto de Neon esté activo
-
-### La aplicación no responde
-- Revisa los logs en el dashboard de Render
-- Verifica que el puerto esté configurado como `3000`
-
-### Error al cargar usuarios
-- Asegúrate de que las tablas estén creadas (db.js lo hace automáticamente)
-- Verifica la conexión a la base de datos
-
-## Tecnologías
-
-- **Backend:** Node.js, Express
-- **Base de datos:** PostgreSQL (Neon)
-- **Frontend:** HTML, Tailwind CSS, Vanilla JavaScript
-- **Deployment:** Render
-
-## Licencia
-
-MIT
+Si tienes problemas:
+1. Verifica que la URL de Neon esté correcta
+2. Revisa los logs en el dashboard de Render
+3. Asegúrate de que `?sslmode=require` esté al final de la URL
