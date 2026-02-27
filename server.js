@@ -349,7 +349,7 @@ app.get('/get/:mirror_id.m3u', async (req, res) => {
       console.log(`[M3U Proxy] Dispositivo existente actualizado: ${clientIp}`);
     } else {
       // Es un dispositivo nuevo o reactivado - verificar el límite primero
-      const activeDevices = parseInt(playlist.active_devices || 0);
+      const activeDevices = parseInt(playlist.active_devices || 10);
 
       console.log(`[M3U Proxy] Dispositivos activos: ${activeDevices}/${maxDevices}`);
 
